@@ -18,6 +18,7 @@ class SpeculativeDecodingEngine:
         if available_workers:
             worker = available_workers[0]
             worker.allocate(task)
+            worker.start()  # Added start() call
         else:
             raise SpeculativeDecodingException('No available workers')
 
