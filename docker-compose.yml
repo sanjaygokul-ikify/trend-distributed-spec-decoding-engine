@@ -1,0 +1,11 @@
+version: '3'
+services:
+  spec-engine:
+    image: dsdec-worker
+    build: .
+    ports:
+      - "50051:50051"
+    environment:
+      - "WORKER_COUNT=4"
+    volumes:
+      - ./.cache
