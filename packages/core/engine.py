@@ -52,7 +52,8 @@ class SpeculativeDecodingEngine:
         for worker in self.worker_pool:
             worker.start()
         self.validation_service.start()
-        self.agent_coordination_manager.start()
+        if self.agent_coordination_manager is not None:
+            self.agent_coordination_manager.start()
 
     def stop(self) -> None:
         # Stop speculative decoding engine
@@ -60,7 +61,8 @@ class SpeculativeDecodingEngine:
         for worker in self.worker_pool:
             worker.stop()
         self.validation_service.stop()
-        self.agent_coordination_manager.stop()
+        if self.agent_coordination_manager is not None:
+            self.agent_coordination_manager.stop()
 
     def join(self) -> None:
         # Join speculative decoding engine
@@ -68,11 +70,12 @@ class SpeculativeDecodingEngine:
         for worker in self.worker_pool:
             worker.join()
         self.validation_service.join()
-        self.agent_coordination_manager.join()
+        if self.agent_coordination_manager is not None:
+            self.agent_coordination_manager.join()
 
     def is_alive(self) -> bool:
         # Check if speculative decoding engine is alive
-        return any(worker.is_alive() for worker in self.worker_pool) or self.validation_service.is_alive() or self.agent_coordination_manager.is_alive()
+        return any(worker.is_alive() for worker in self.worker_pool) or self.validation_service.is_alive() or (self.agent_coordination_manager is not None and self.agent_coordination_manager.is_alive())
 
     def __str__(self) -> str:
         # String representation of speculative decoding engine
