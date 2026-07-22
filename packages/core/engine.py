@@ -17,18 +17,30 @@ class SpeculativeDecodingEngine:
         available_workers = [worker for worker in self.worker_pool if not worker.is_busy()]
         if available_workers:
             worker = available_workers[0]
-            worker.allocate(task)
-            worker.start()  # Added start() call
+            try:
+                worker.allocate(task)
+                worker.start()  # Added start() call
+            except Exception as e:
+                logging.error('Error allocating task to worker: %s', e)
+                raise WorkerAllocationException('Error allocating task to worker')
         else:
             raise SpeculativeDecodingException('No available workers')
 
     def propose(self, speculative_token: str, validation_priority: int) -> None:
         # Propose speculative token to validation service
-        self.validation_service.propose(speculative_token, validation_priority)
+        try:
+            self.validation_service.propose(speculative_token, validation_priority)
+        except Exception as e:
+            logging.error('Error proposing speculative token: %s', e)
+            raise ValidationException('Error proposing speculative token')
 
     def validate(self, speculative_token: str) -> bool:
         # Validate speculative token
-        return self.validation_service.validate(speculative_token)
+        try:
+            return self.validation_service.validate(speculative_token)
+        except Exception as e:
+            logging.error('Error validating speculative token: %s', e)
+            raise ValidationException('Error validating speculative token')
 
     def update_memory_coherence_cache(self, speculative_token: str, validated_token: str) -> None:
         # Update memory coherence cache
@@ -50,28 +62,64 @@ class SpeculativeDecodingEngine:
         # Start speculative decoding engine
         logging.info('Starting speculative decoding engine')
         for worker in self.worker_pool:
-            worker.start()
-        self.validation_service.start()
+            try:
+                worker.start()
+            except Exception as e:
+                logging.error('Error starting worker: %s', e)
+                raise AgentCoordinationException('Error starting worker')
+        try:
+            self.validation_service.start()
+        except Exception as e:
+            logging.error('Error starting validation service: %s', e)
+            raise ValidationException('Error starting validation service')
         if self.agent_coordination_manager is not None:
-            self.agent_coordination_manager.start()
+            try:
+                self.agent_coordination_manager.start()
+            except Exception as e:
+                logging.error('Error starting agent coordination manager: %s', e)
+                raise AgentCoordinationException('Error starting agent coordination manager')
 
     def stop(self) -> None:
         # Stop speculative decoding engine
         logging.info('Stopping speculative decoding engine')
         for worker in self.worker_pool:
-            worker.stop()
-        self.validation_service.stop()
+            try:
+                worker.stop()
+            except Exception as e:
+                logging.error('Error stopping worker: %s', e)
+                raise AgentCoordinationException('Error stopping worker')
+        try:
+            self.validation_service.stop()
+        except Exception as e:
+            logging.error('Error stopping validation service: %s', e)
+            raise ValidationException('Error stopping validation service')
         if self.agent_coordination_manager is not None:
-            self.agent_coordination_manager.stop()
+            try:
+                self.agent_coordination_manager.stop()
+            except Exception as e:
+                logging.error('Error stopping agent coordination manager: %s', e)
+                raise AgentCoordinationException('Error stopping agent coordination manager')
 
     def join(self) -> None:
         # Join speculative decoding engine
         logging.info('Joining speculative decoding engine')
         for worker in self.worker_pool:
-            worker.join()
-        self.validation_service.join()
+            try:
+                worker.join()
+            except Exception as e:
+                logging.error('Error joining worker: %s', e)
+                raise AgentCoordinationException('Error joining worker')
+        try:
+            self.validation_service.join()
+        except Exception as e:
+            logging.error('Error joining validation service: %s', e)
+            raise ValidationException('Error joining validation service')
         if self.agent_coordination_manager is not None:
-            self.agent_coordination_manager.join()
+            try:
+                self.agent_coordination_manager.join()
+            except Exception as e:
+                logging.error('Error joining agent coordination manager: %s', e)
+                raise AgentCoordinationException('Error joining agent coordination manager')
 
     def is_alive(self) -> bool:
         # Check if speculative decoding engine is alive
